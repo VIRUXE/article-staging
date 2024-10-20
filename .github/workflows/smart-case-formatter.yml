@@ -1,0 +1,83 @@
+name: Smart Case Formatter
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  # Enable manual trigger
+  workflow_dispatch:
+
+jobs:
+  lowercase-names:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Selectively lowercase files and folders
+        run: |
+          # Function to check if string is all uppercase
+          is_all_uppercase() {
+            [[ "$1" == *[[:lower:]]* ]] && return 1 || return 0
+          }
+          
+          # Function to check if string is in PascalCase
+          is_pascal_case() {
+            # Check if first character is uppercase and string contains both upper and lowercase
+            [[ "$1" =~ ^[A-Z][a-zA-Z0-9]*$ ]] && [[ "$1" =~ [a-z] ]] && return 0 || return 1
+          }
+          
+          # Function to process paths
+          process_paths() {
+            local dir="$1"
+            # Find all files and directories, excluding .git
+            find "$dir" -depth -not -path '*/\.git/*' -not -path '*/\.git' | while read path; do
+              # Get directory and filename
+              dirname=$(dirname "$path")
+              basename=$(basename "$path")
+              
+              # Convert to lowercase for comparison
+              lowercase_basename=$(echo "$basename" | tr '[:upper:]' '[:lower:]')
+              
+              should_rename=false
+              
+              if [ -d "$path" ]; then
+                # Always lowercase directories
+                should_rename=true
+              elif [ -f "$path" ]; then
+                # For files: lowercase if PascalCase, but not if all uppercase
+                if is_all_uppercase "$basename"; then
+                  should_rename=false
+                elif is_pascal_case "$basename"; then
+                  should_rename=true
+                fi
+              fi
+              
+              # Rename if conditions are met and name would actually change
+              if $should_rename && [ "$basename" != "$lowercase_basename" ]; then
+                new_path="$dirname/$lowercase_basename"
+                git mv "$path" "$new_path"
+                echo "Renamed: $path -> $new_path"
+              fi
+            done
+          }
+          
+          # Configure Git
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          
+          # Process all files and folders
+          process_paths "."
+          
+          # Commit changes if any
+          if ! git diff --quiet; then
+            git commit -am "Selectively convert names to lowercase
+            
+            - Converted all folder names to lowercase
+            - Converted PascalCase file names to lowercase
+            - Preserved all-uppercase file names"
+            git push
+          fi
