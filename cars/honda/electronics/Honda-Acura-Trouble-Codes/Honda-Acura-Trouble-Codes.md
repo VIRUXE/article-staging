@@ -53,9 +53,9 @@
 - 3 - Throttle Position Sensor Circuit Open Or Shorted
 - 4 - Vehicle Speed Sensor Open Or Shorted No Signal From Speedometer
 - 5 - Shift Lever Position Switch Circuit Shorted
-- 6 - Shift LeveR Position Switch Circuit Open
+- 6 - Shift Lever Position Switch Circuit Open
 - 7 - Shift Solenoid 'A' Circuit Open Or Shorted
-- 8 - Shift Solenoid 'B'Circuit Open Or Shorted
+- 8 - Shift Solenoid 'B' Circuit Open Or Shorted
 - 9 - Counter Shaft Or Transmission Speed Pulse Generator Open Or Shorted
 - 10 - Coolant Temperature Sensor Open Or Shorted
 - 11 - Engine Rpm ( Ignition Coil Signal) Open Or Shorted
